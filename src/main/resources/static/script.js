@@ -1,0 +1,192 @@
+const chatArea = document.getElementById('chatArea');
+const userInput = document.getElementById('userInput');
+const imageInput = document.getElementById('imageInput');
+const sendButton = document.getElementById('sendButton');
+const imageShow = document.getElementById('imageShow');
+
+const chatId = 1; // 替换为需要查询的聊天 ID
+
+function renderResponseWaiting() {
+    const msgDiv = document.createElement('div');
+    msgDiv.className = "assistant-message";
+    msgDiv.id = 'message-loader'
+    chatArea.appendChild(msgDiv);
+
+    const headDiv = document.createElement('div');
+    headDiv.className = 'head-icon';
+    headDiv.textContent = "AI：";
+    msgDiv.appendChild(headDiv);
+
+    const contentDiv = document.createElement('div');
+    contentDiv.className = 'content';
+    contentDiv.style.display = 'flex';
+    contentDiv.style.justifyContent = 'center';
+    contentDiv.style.alignItems = 'center';
+    msgDiv.appendChild(contentDiv);
+
+    const loaderDiv = document.createElement('div');
+    loaderDiv.className = 'loader';
+    contentDiv.appendChild(loaderDiv);
+}
+
+function renderInitLoading() {
+    const contentDiv = document.createElement('div');
+    contentDiv.id = 'init-loader'
+    contentDiv.className = 'content';
+    contentDiv.style.display = 'flex';
+    contentDiv.style.height = '100%';
+    contentDiv.style.justifyContent = 'center';
+    contentDiv.style.alignItems = 'center';
+    chatArea.appendChild(contentDiv);
+
+    const loaderDiv = document.createElement('div');
+    loaderDiv.className = 'loader';
+    contentDiv.appendChild(loaderDiv);
+}
+
+function removeResponseWaiting() {
+    document.getElementById('message-loader').remove();
+}
+
+function removeInitLoading() {
+    document.getElementById('init-loader').remove();
+}
+
+// 获取聊天记录
+async function fetchChatHistory() {
+    renderInitLoading();
+
+    try {
+        const response = await fetch(`http://localhost:8080/chat/${chatId}`);
+        const data = await response.json();
+        removeInitLoading();
+        renderChatHistory(data);
+    } catch (error) {
+        console.error('Error fetching chat history:', error);
+    }
+}
+
+function renderChatRecordItem(record) {
+    const msgDiv = document.createElement('div');
+    msgDiv.className = record.role === "user" ? "user-message" : "assistant-message";
+    chatArea.appendChild(msgDiv);
+
+    const headDiv = document.createElement('div');
+    headDiv.className = 'head-icon';
+    headDiv.textContent = record.role === "user" ? "我：" : "AI：";
+    msgDiv.appendChild(headDiv);
+
+    const contentDiv = document.createElement('div');
+    contentDiv.className = 'content';
+    msgDiv.appendChild(contentDiv);
+
+    record.contents.forEach(content => {
+        if(content.type === "TEXT") {
+            contentDiv.textContent = content.text; // 假设record有userInput字段
+        }
+
+        // 若有图像，则添加图像
+        if (content.type === "IMAGE") {
+            const img = document.createElement('img');
+            img.src = 'data:image/' + content.image.format + ';base64,' + content.image.source.bytesStr;
+            img.style.height = '150px'
+            img.style.display = 'block';
+            contentDiv.appendChild(img);
+        }
+    });
+}
+// 渲染聊天记录
+function renderChatHistory(chatRecords) {
+    chatArea.innerHTML = '';  // 清空当前聊天记录
+
+    chatRecords.conversations.forEach(record => {
+        renderChatRecordItem(record);
+    });
+    chatArea.scrollTop = chatArea.scrollHeight; // 滚动到底部
+}
+
+function generateChatRecord(role, userInputValue, imgFiles) {
+    const record = {};
+    record.role = role;
+    record.contents = [{'type': 'TEXT', 'text': userInputValue}];
+
+    if(imgFiles.length > 0) {
+        var reader = new FileReader(); // 创建FileReader对象
+        reader.onload = function (e) { // 文件读取成功完成后的处理
+            var imgContent = e.target.result;
+            var imageType  = 'jpg';
+            var imgBase64Str = '';
+
+            const imgTypeMatch = imgContent.match(/data:image\/([a-z]{0,4});.+/);
+            if (imgTypeMatch) {
+                imageType = imgTypeMatch[1]; // 提取的内容在 match[1] 中
+            }
+
+            const imgBase64StrMatch = imgContent.match(/data:image\/[a-z]{0,4};base64,(.+)/);
+            if (imgBase64StrMatch) {
+                imgBase64Str = imgBase64StrMatch[1]; // 提取的内容在 match[1] 中
+            }
+
+            record.contents.push({'type': 'IMAGE', 'image': {"format": imageType, "source": {"bytesStr": imgBase64Str}}});
+            renderChatRecordItem(record);
+            renderResponseWaiting();
+            chatArea.scrollTop = chatArea.scrollHeight; // 滚动到底部
+        };
+        reader.readAsDataURL(imgFiles[0]); // 读取文件为base64
+    } else {
+        renderChatRecordItem(record);
+        renderResponseWaiting();
+        chatArea.scrollTop = chatArea.scrollHeight; // 滚动到底部
+    }
+}
+
+// 发送消息
+async function sendMessage() {
+    if(userInput.value.trim() === '') {
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append('id', chatId);
+    formData.append('userInput', userInput.value);
+    formData.append('imgFile', imageInput.files[0]);
+
+    generateChatRecord('user', userInput.value, imageInput.files);
+
+    try {
+        userInput.value = ''; // 清空输入框
+        imageInput.value = ''; // 清空文件选择
+        imageShow.src = ''; //清空图片预览
+        imageShow.style.display = 'none';
+
+        const response = await fetch('http://localhost:8080/chat', {
+            method: 'POST',
+            body: formData
+        });
+
+        if (response.ok) {
+            const jsonData = await response.json();
+            removeResponseWaiting();
+            renderChatRecordItem(jsonData); // 重新获取聊天记录
+            chatArea.scrollTop = chatArea.scrollHeight; // 滚动到底部
+        } else {
+            console.error('错误:', response.statusText);
+        }
+    } catch (error) {
+        console.error('发送消息时出错:', error);
+    }
+}
+
+imageInput.addEventListener('change', function(event) {
+    var file = event.target.files[0];
+    var reader = new FileReader();
+    reader.onload = function(e) {
+        imageShow.src = e.target.result;
+        imageShow.style.height = '150px'
+        imageShow.style.display = 'block';
+    };
+    reader.readAsDataURL(file);
+});
+
+sendButton.addEventListener('click', sendMessage);
+window.onload = fetchChatHistory; // 页面加载时获取聊天记录

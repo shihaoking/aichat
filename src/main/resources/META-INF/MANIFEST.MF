@@ -1,0 +1,54 @@
+Manifest-Version: 1.0
+Main-Class: org.simon.aichat.AichatApplication
+Class-Path: jtokkit-1.1.0.jar spring-core-6.1.12.jar jakarta.persistence
+ -api-3.1.0.jar spring-boot-starter-web-3.3.3.jar netty-common-4.1.112.F
+ inal.jar spring-cloud-function-core-4.1.3.jar logback-core-1.5.7.jar id
+ entity-spi-2.26.7.jar spring-beans-6.1.12.jar apache-client-2.26.7.jar 
+ tomcat-embed-websocket-10.1.28.jar auth-2.26.7.jar antlr-runtime-3.5.3.
+ jar checksums-2.26.7.jar jackson-datatype-jdk8-2.17.2.jar jandex-3.1.2.
+ jar tomcat-embed-el-10.1.28.jar jboss-logging-3.5.3.Final.jar eventstre
+ am-1.0.1.jar micrometer-observation-1.13.3.jar netty-transport-4.1.112.
+ Final.jar aws-core-2.26.7.jar spring-ai-core-1.0.0-M2.jar netty-nio-cli
+ ent-2.26.7.jar third-party-jackson-core-2.26.7.jar commons-lang3-3.14.0
+ .jar retries-spi-2.26.7.jar metrics-spi-2.26.7.jar protocol-core-2.26.7
+ .jar logback-classic-1.5.7.jar jsonschema-module-swagger-2-4.35.0.jar c
+ hecksums-spi-2.26.7.jar HdrHistogram-2.2.2.jar spring-expression-6.1.12
+ .jar spring-aop-6.1.12.jar bedrockruntime-2.26.7.jar tomcat-embed-core-
+ 10.1.28.jar jakarta.xml.bind-api-4.0.2.jar jackson-datatype-jsr310-2.17
+ .2.jar spring-boot-starter-aop-3.3.3.jar mysql-connector-j-8.3.0.jar ja
+ karta.annotation-api-2.1.1.jar jaxb-runtime-4.0.5.jar spring-boot-start
+ er-tomcat-3.3.3.jar http-auth-aws-2.26.7.jar typetools-0.6.2.jar jaxb-c
+ ore-4.0.5.jar retries-2.26.7.jar classmate-1.7.0.jar jsonschema-generat
+ or-4.35.0.jar hibernate-core-6.5.2.Final.jar reactive-streams-1.0.4.jar
+  spring-tx-6.1.12.jar httpclient-4.5.13.jar spring-boot-starter-data-jp
+ a-3.3.3.jar spring-webflux-6.1.12.jar spring-dynamic-jpa-3.1.8.jar nett
+ y-codec-4.1.112.Final.jar spring-orm-6.1.12.jar spring-jdbc-6.1.12.jar 
+ netty-handler-4.1.112.Final.jar spring-boot-starter-logging-3.3.3.jar j
+ ackson-module-parameter-names-2.17.2.jar jsonschema-module-jackson-4.35
+ .0.jar spring-boot-3.3.3.jar byte-buddy-1.14.19.jar snakeyaml-2.2.jar s
+ pring-messaging-6.1.12.jar LatencyUtils-2.0.3.jar spring-dynamic-common
+ s-2.0.0.jar spring-ai-spring-boot-autoconfigure-1.0.0-M2.jar json-utils
+ -2.26.7.jar profiles-2.26.7.jar txw2-4.0.5.jar netty-codec-http-4.1.112
+ .Final.jar jakarta.activation-api-2.1.3.jar istack-commons-runtime-4.1.
+ 2.jar jackson-databind-2.17.2.jar jul-to-slf4j-2.0.16.jar log4j-to-slf4
+ j-2.23.1.jar spring-data-commons-3.3.3.jar reactor-core-3.6.9.jar slf4j
+ -api-2.0.16.jar spring-boot-starter-3.3.3.jar netty-codec-http2-4.1.112
+ .Final.jar spring-context-support-6.1.12.jar ST4-4.3.4.jar spring-boot-
+ starter-json-3.3.3.jar httpcore-4.4.16.jar netty-resolver-4.1.112.Final
+ .jar sdk-core-2.26.7.jar annotations-2.26.7.jar spring-jcl-6.1.12.jar j
+ akarta.transaction-api-2.0.1.jar spring-cloud-function-context-4.1.3.ja
+ r aspectjweaver-1.9.22.1.jar jakarta.inject-api-2.0.1.jar antlr4-runtim
+ e-4.13.0.jar aws-json-protocol-2.26.7.jar netty-transport-classes-epoll
+ -4.1.112.Final.jar swagger-annotations-2.2.20.jar netty-buffer-4.1.112.
+ Final.jar angus-activation-2.0.2.jar HikariCP-5.1.0.jar spring-boot-aut
+ oconfigure-3.3.3.jar log4j-api-2.23.1.jar micrometer-core-1.13.3.jar ja
+ ckson-annotations-2.17.2.jar spring-boot-starter-jdbc-3.3.3.jar endpoin
+ ts-spi-2.26.7.jar http-auth-spi-2.26.7.jar netty-transport-native-unix-
+ common-4.1.112.Final.jar hibernate-commons-annotations-6.0.6.Final.jar 
+ micrometer-commons-1.13.3.jar json-20240303.jar regions-2.26.7.jar jack
+ son-core-2.17.2.jar http-auth-2.26.7.jar spring-web-6.1.12.jar http-cli
+ ent-spi-2.26.7.jar spring-webmvc-6.1.12.jar spring-data-jpa-3.3.3.jar s
+ pring-ai-bedrock-1.0.0-M2.jar utils-2.26.7.jar commons-codec-1.16.1.jar
+  spring-aspects-6.1.12.jar spring-context-6.1.12.jar spring-ai-bedrock-
+ ai-spring-boot-starter-1.0.0-M2.jar
+
