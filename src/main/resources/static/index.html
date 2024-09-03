@@ -19,6 +19,15 @@
             border-radius: 50%;
             background-color: #c482ea; /* 你可以更改颜色 */
             animation: scale 1.5s infinite;
+            display: block;
+        }
+        .mini-loader {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background-color: #c482ea; /* 你可以更改颜色 */
+            animation: scale 1.5s infinite;
+            display: block;
         }
         @keyframes scale {
             0%, 100% {
@@ -58,9 +67,18 @@
         .content {
             white-space: pre-wrap;
         }
+        .img-input-area {
+            padding: 10px 0;
+            display: flex;
+            align-items: center;
+            height: 50px;
+        }
         #imageInput {
-            margin-top: 10px;
-            margin-bottom: 10px;
+            width: 200px;
+            display: inline-block;
+        }
+        #imageShow {
+            height: 50px;
         }
     </style>
 </head>
@@ -68,7 +86,10 @@
     <div id="chatArea">
     </div>
     <div class="inputArea">
-        <input type="file" id="imageInput" /><img id="imageShow" src="" style="display: none;">
+        <div class="img-input-area">
+            <input type="file" id="imageInput" />
+            <img id="imageShow" src="" style="display: none;">
+        </div>
         <textarea id="userInput" placeholder="输入消息..." rows="4" style="width: 100%;"></textarea>
         <button id="sendButton">发送</button>
     </div>

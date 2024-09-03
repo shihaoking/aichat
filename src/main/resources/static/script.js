@@ -25,7 +25,7 @@ function renderResponseWaiting() {
     msgDiv.appendChild(contentDiv);
 
     const loaderDiv = document.createElement('div');
-    loaderDiv.className = 'loader';
+    loaderDiv.className = 'mini-loader';
     contentDiv.appendChild(loaderDiv);
 }
 
@@ -57,7 +57,7 @@ async function fetchChatHistory() {
     renderInitLoading();
 
     try {
-        const response = await fetch(`http://localhost:8080/chat/${chatId}`);
+        const response = await fetch(`/chat/${chatId}`);
         const data = await response.json();
         removeInitLoading();
         renderChatHistory(data);
@@ -159,7 +159,7 @@ async function sendMessage() {
         imageShow.src = ''; //清空图片预览
         imageShow.style.display = 'none';
 
-        const response = await fetch('http://localhost:8080/chat', {
+        const response = await fetch('/chat', {
             method: 'POST',
             body: formData
         });
@@ -182,11 +182,19 @@ imageInput.addEventListener('change', function(event) {
     var reader = new FileReader();
     reader.onload = function(e) {
         imageShow.src = e.target.result;
-        imageShow.style.height = '150px'
-        imageShow.style.display = 'block';
+        imageShow.style.display = 'inline-block';
     };
     reader.readAsDataURL(file);
 });
 
 sendButton.addEventListener('click', sendMessage);
+// 监听键盘按下事件
+document.addEventListener('keydown',
+    function(event) {
+        // 检查按下的键是否是回车键
+        if (event.key === 'Enter') {
+            // 触发按钮的点击事件
+            sendButton.click();
+        }
+});
 window.onload = fetchChatHistory; // 页面加载时获取聊天记录
