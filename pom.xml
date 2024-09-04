@@ -79,8 +79,33 @@
     <build>
         <plugins>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.8.1</version><!-- 配置中的版本号 -->
+                <configuration>
+                    <source>17</source><!-- 设置源代码的JDK版本 -->
+                    <target>17</target><!-- 设置目标代码的JDK版本 -->
+                    <encoding>UTF-8</encoding><!-- 设置编码方式 -->
+                    <skipTests>true</skipTests>
+                </configuration>
+            </plugin>
+            <!--maven 打包插件-->
+            <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>3.3.3</version>
+                <configuration>
+                    <mainClass>org.simon.aichat.AichatApplication</mainClass><!-- 配置启动类 -->
+                    <skip>false</skip><!--是否忽略启动类-->
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>repackage</id>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
