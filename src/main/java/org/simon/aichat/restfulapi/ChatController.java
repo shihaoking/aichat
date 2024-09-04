@@ -1,5 +1,6 @@
 package org.simon.aichat.restfulapi;
 
+import org.simon.aichat.service.ChatRecordSummary;
 import org.simon.aichat.utils.ChatConversationUtils;
 import org.simon.aichat.claude3.ChatConversation;
 import org.simon.aichat.claude3.ConverseAsync;
@@ -59,5 +60,11 @@ public class ChatController {
         }
 
         return ResponseEntity.ok(chatRecord);
+    }
+
+    @GetMapping("/chat_records_summary")
+    public ResponseEntity<List<ChatRecordSummary>> chatRecordsSummary() {
+        List<ChatRecordSummary> chatRecordSummaries = chatConversationService.getChatRecordsSummaryByUserId(1L);
+        return ResponseEntity.ok(chatRecordSummaries);
     }
 }

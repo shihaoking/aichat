@@ -3,8 +3,13 @@ const userInput = document.getElementById('userInput');
 const imageInput = document.getElementById('imageInput');
 const sendButton = document.getElementById('sendButton');
 const imageShow = document.getElementById('imageShow');
+const chatRecordsSummaryArea = document.getElementById('chatRecordsSummaryArea');
 
 const chatId = 1; // 替换为需要查询的聊天 ID
+
+function onRecordSummaryItemSelected() {
+    this.className = this.className + ' record-active';
+}
 
 function renderResponseWaiting() {
     const msgDiv = document.createElement('div');
@@ -29,15 +34,14 @@ function renderResponseWaiting() {
     contentDiv.appendChild(loaderDiv);
 }
 
-function renderInitLoading() {
+function renderInitLoading(parentDom) {
     const contentDiv = document.createElement('div');
-    contentDiv.id = 'init-loader'
-    contentDiv.className = 'content';
+    contentDiv.className = 'init-loader content';
     contentDiv.style.display = 'flex';
     contentDiv.style.height = '100%';
     contentDiv.style.justifyContent = 'center';
     contentDiv.style.alignItems = 'center';
-    chatArea.appendChild(contentDiv);
+    parentDom.appendChild(contentDiv);
 
     const loaderDiv = document.createElement('div');
     loaderDiv.className = 'loader';
@@ -48,19 +52,53 @@ function removeResponseWaiting() {
     document.getElementById('message-loader').remove();
 }
 
-function removeInitLoading() {
-    document.getElementById('init-loader').remove();
+function removeInitLoading(parentDom) {
+    parentDom.querySelector('.init-loader').remove();
+}
+
+function renderChatRecordsSummary(records) {
+    if(records == null || records.length === 0) {
+        return;
+    }
+
+    records.forEach(record => {
+        const rsItemDiv = document.createElement('div');
+        rsItemDiv.className = "record-summary-item";
+        rsItemDiv.setAttribute("record-id", record.chatId);
+        rsItemDiv.addEventListener('click', onRecordSummaryItemSelected);
+
+        const rsItemtTitleDiv = document.createElement('div');
+        rsItemtTitleDiv.className = "record-summary-item-title";
+        rsItemtTitleDiv.textContent = record.chatSummary;
+        rsItemDiv.appendChild(rsItemtTitleDiv);
+
+        chatRecordsSummaryArea.appendChild(rsItemDiv);
+    })
+}
+
+// 获取聊天回话列表
+async function fetchChatRecordsSummary() {
+    renderInitLoading(chatRecordsSummaryArea);
+
+    try {
+        const response = await fetch('/chat_records_summary');
+        const data = await response.json();
+        removeInitLoading(chatRecordsSummaryArea);
+        renderChatRecordsSummary(data);
+    } catch (error) {
+        console.error('Error fetching chat records summary:', error);
+    }
 }
 
 // 获取聊天记录
-async function fetchChatHistory() {
-    renderInitLoading();
+async function fetchChatDetailHistory() {
+    renderInitLoading(chatArea);
 
     try {
         const response = await fetch(`/chat/${chatId}`);
         const data = await response.json();
-        removeInitLoading();
-        renderChatHistory(data);
+        removeInitLoading(chatArea);
+        renderChatDetailHistory(data);
     } catch (error) {
         console.error('Error fetching chat history:', error);
     }
@@ -96,7 +134,7 @@ function renderChatRecordItem(record) {
     });
 }
 // 渲染聊天记录
-function renderChatHistory(chatRecords) {
+function renderChatDetailHistory(chatRecords) {
     chatArea.innerHTML = '';  // 清空当前聊天记录
 
     chatRecords.conversations.forEach(record => {
@@ -197,4 +235,10 @@ document.addEventListener('keydown',
             sendButton.click();
         }
 });
-window.onload = fetchChatHistory; // 页面加载时获取聊天记录
+
+async function onloadInit() {
+    fetchChatRecordsSummary();
+    fetchChatDetailHistory();
+}
+
+window.onload = onloadInit; // 页面加载时获取聊天记录

@@ -9,6 +9,7 @@ import org.simon.aichat.dbservice.ChatRecord;
 import org.simon.aichat.dbservice.ChatRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -36,7 +37,7 @@ public class ChatConversationService {
             });
             chatConversationRecord.setConversations(chatConversations);
         } catch (JsonProcessingException e) {
-            System.err.printf("Can't invoke '%s': %s", chatId, e.getMessage());
+            System.err.printf("Can't getChatConversationsByChatId '%s': %s", chatId, e.getMessage());
         }
 
         return chatConversationRecord;
@@ -57,9 +58,45 @@ public class ChatConversationService {
             chatRepository.save(record);
 
         } catch (JsonProcessingException e) {
-            System.err.printf("Can't invoke '%s': %s", e.getMessage());
+            System.err.printf("Can't saveChatConversation '%s': %s", e.getMessage());
             return false;
         }
         return true;
+    }
+
+    public List<ChatRecordSummary> getChatRecordsSummaryByUserId(Long userId) {
+        Optional<List<ChatRecord>> chatRecords = chatRepository.findByUserId(userId);
+
+        if(chatRecords.isEmpty()) {
+            return null;
+        }
+
+        List<ChatRecordSummary> chatRecordSummaries = new ArrayList<>();
+        chatRecords.ifPresent(chatRecordList -> {
+            chatRecordList.forEach(record -> {
+                ChatRecordSummary chatRecordSummary = new ChatRecordSummary();
+                chatRecordSummary.setChatId(record.getId());
+                chatRecordSummary.setUserId(record.getUserId());
+                chatRecordSummary.setGmtCreate(record.getGmtCreate());
+                chatRecordSummary.setGmtModified(record.getGmtModified());
+
+                ObjectMapper objectMapper = new ObjectMapper();
+                try {
+                    List<ChatConversation> chatConversations = objectMapper.readValue(record.getContent(), new TypeReference<>() {
+                    });
+
+                    if(!chatConversations.isEmpty() && !chatConversations.get(0).getContents().isEmpty()) {
+                        chatRecordSummary.setChatSummary(chatConversations.get(0).getContents().get(0).getText().substring(0, 30));
+                    }
+                } catch (JsonProcessingException e) {
+                    System.err.printf("Can't getChatRecordsSummaryByUserId '%s': %s", userId, e.getMessage());
+                }
+
+
+                chatRecordSummaries.add(chatRecordSummary);
+            });
+        });
+
+        return chatRecordSummaries;
     }
 }
