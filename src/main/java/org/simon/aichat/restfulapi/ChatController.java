@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import software.amazon.awssdk.services.bedrockruntime.model.*;
 
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
@@ -25,9 +26,13 @@ public class ChatController {
     private ChatConversationService chatConversationService;
 
     @PostMapping("/chat")
-    public ResponseEntity<ChatConversation> chat(@RequestParam Long id, @RequestParam String userInput, @RequestParam(required = false) MultipartFile imgFile) {
+    public ResponseEntity<ChatConversation> chat(@RequestParam(required = false) Long id, @RequestParam String userInput, @RequestParam(required = false) MultipartFile imgFile) {
 
-        ChatConversationRecord chatRecord = chatConversationService.getChatConversationsByChatId(id);
+        ChatConversationRecord chatRecord = null;
+        if(id != null) {
+            chatRecord = chatConversationService.getChatConversationsByChatId(id);
+        }
+
         if(chatRecord == null) {
             chatRecord = new ChatConversationRecord();
         }
@@ -65,6 +70,7 @@ public class ChatController {
     @GetMapping("/chat_records_summary")
     public ResponseEntity<List<ChatRecordSummary>> chatRecordsSummary() {
         List<ChatRecordSummary> chatRecordSummaries = chatConversationService.getChatRecordsSummaryByUserId(1L);
+        chatRecordSummaries.sort(Comparator.comparing(ChatRecordSummary::getGmtCreate));
         return ResponseEntity.ok(chatRecordSummaries);
     }
 }

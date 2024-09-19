@@ -4,11 +4,26 @@ const imageInput = document.getElementById('imageInput');
 const sendButton = document.getElementById('sendButton');
 const imageShow = document.getElementById('imageShow');
 const chatRecordsSummaryArea = document.getElementById('chatRecordsSummaryArea');
+const newChatButton = document.getElementById('newChatButton');
 
-const chatId = 1; // 替换为需要查询的聊天 ID
+var chatId = 1; // 替换为需要查询的聊天 ID
 
 function onRecordSummaryItemSelected() {
+    unactiveOtherRecordSummaryItem();
+
     this.className = this.className + ' record-active';
+    chatId = this.getAttribute("record-id");
+    fetchChatDetailHistory();
+}
+
+function unactiveOtherRecordSummaryItem() {
+    // 获取所有选择的 div
+    const divs = document.querySelectorAll('.record-summary-item');
+
+    // 为每个 div 添加点击事件监听器
+    divs.forEach(div => {
+        div.className = 'record-summary-item';
+    });
 }
 
 function renderResponseWaiting() {
@@ -56,23 +71,37 @@ function removeInitLoading(parentDom) {
     parentDom.querySelector('.init-loader').remove();
 }
 
+function renderChatRecordsSummaryItem(record, insertBefore = false, selected = false) {
+    const rsItemDiv = document.createElement('div');
+    rsItemDiv.className = selected === true ? "record-summary-item record-active" : "record-summary-item";
+    rsItemDiv.setAttribute("record-id", record.chatId);
+    rsItemDiv.addEventListener('click', onRecordSummaryItemSelected);
+
+    const rsItemtTitleDiv = document.createElement('div');
+    rsItemtTitleDiv.className = "record-summary-item-title";
+    rsItemtTitleDiv.textContent = record.chatSummary;
+    rsItemDiv.appendChild(rsItemtTitleDiv);
+
+    if(selected) {
+        unactiveOtherRecordSummaryItem();
+    }
+
+    if(insertBefore) {
+        chatRecordsSummaryArea.parentNode.insertBefore(rsItemDiv, chatRecordsSummaryArea);
+    } else {
+        chatRecordsSummaryArea.appendChild(rsItemDiv);
+    }
+}
+
 function renderChatRecordsSummary(records) {
     if(records == null || records.length === 0) {
         return;
     }
 
+    var i = 1;
     records.forEach(record => {
-        const rsItemDiv = document.createElement('div');
-        rsItemDiv.className = "record-summary-item";
-        rsItemDiv.setAttribute("record-id", record.chatId);
-        rsItemDiv.addEventListener('click', onRecordSummaryItemSelected);
-
-        const rsItemtTitleDiv = document.createElement('div');
-        rsItemtTitleDiv.className = "record-summary-item-title";
-        rsItemtTitleDiv.textContent = record.chatSummary;
-        rsItemDiv.appendChild(rsItemtTitleDiv);
-
-        chatRecordsSummaryArea.appendChild(rsItemDiv);
+        renderChatRecordsSummaryItem(record,  false,i === 1);
+        i++;
     })
 }
 
@@ -92,8 +121,9 @@ async function fetchChatRecordsSummary() {
 
 // 获取聊天记录
 async function fetchChatDetailHistory() {
-    renderInitLoading(chatArea);
+    chatArea.innerHTML = '';  // 清空当前聊天记录
 
+    renderInitLoading(chatArea);
     try {
         const response = await fetch(`/chat/${chatId}`);
         const data = await response.json();
@@ -133,10 +163,9 @@ function renderChatRecordItem(record) {
         }
     });
 }
+
 // 渲染聊天记录
 function renderChatDetailHistory(chatRecords) {
-    chatArea.innerHTML = '';  // 清空当前聊天记录
-
     chatRecords.conversations.forEach(record => {
         renderChatRecordItem(record);
     });
@@ -185,7 +214,9 @@ async function sendMessage() {
     }
 
     const formData = new FormData();
-    formData.append('id', chatId);
+    if(chatId != null) {
+        formData.append('id', chatId);
+    }
     formData.append('userInput', userInput.value);
     formData.append('imgFile', imageInput.files[0]);
 
@@ -215,6 +246,15 @@ async function sendMessage() {
     }
 }
 
+function newChat() {
+    chatId = null; //清空回话ID（新建会话）
+    chatArea.innerHTML = '';  // 清空当前聊天记录
+
+    const record = {'chatId': null, 'chatSummary': '新会话'};
+    renderChatRecordsSummaryItem(record, true, true);
+
+}
+
 imageInput.addEventListener('change', function(event) {
     var file = event.target.files[0];
     var reader = new FileReader();
@@ -225,7 +265,6 @@ imageInput.addEventListener('change', function(event) {
     reader.readAsDataURL(file);
 });
 
-sendButton.addEventListener('click', sendMessage);
 // 监听键盘按下事件
 document.addEventListener('keydown',
     function(event) {
@@ -235,6 +274,9 @@ document.addEventListener('keydown',
             sendButton.click();
         }
 });
+
+sendButton.addEventListener('click', sendMessage);
+newChatButton.addEventListener('click', newChat);
 
 async function onloadInit() {
     fetchChatRecordsSummary();
