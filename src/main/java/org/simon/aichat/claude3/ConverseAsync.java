@@ -51,6 +51,8 @@ public class ConverseAsync {
         // Handle the response or error using the future object.
         request.whenComplete((response, error) -> {
             if (error == null) {
+                ;
+                System.out.println("Claude process latency(ms): " + response.metrics().latencyMs());
                 // Extract the generated text from Bedrock's response object.
                 Message responseMessage = response.output().message();
                 future.complete(responseMessage);
@@ -62,7 +64,7 @@ public class ConverseAsync {
         try {
             // Wait for the future object to complete and retrieve the generated text.
             Message responseMessage = future.get();
-            //System.out.println("Claude: " + responseMessage);
+
             client.close();
 
             return responseMessage;
