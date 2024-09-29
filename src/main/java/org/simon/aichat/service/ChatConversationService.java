@@ -8,11 +8,9 @@ import org.simon.aichat.claude3.ChatConversation;
 import org.simon.aichat.dbservice.ChatRecord;
 import org.simon.aichat.dbservice.ChatRepository;
 import org.springframework.stereotype.Service;
+import software.amazon.awssdk.services.bedrockruntime.model.ContentBlock;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class ChatConversationService {
@@ -86,7 +84,10 @@ public class ChatConversationService {
                     });
 
                     if(!chatConversations.isEmpty() && !chatConversations.get(0).getContents().isEmpty()) {
-                        chatRecordSummary.setChatSummary(chatConversations.get(0).getContents().get(0).getText().substring(0, 30));
+                        chatConversations.get(0).getContents().stream()
+                                .filter(item -> item.getType() == ContentBlock.Type.TEXT).forEach(item -> {
+                                    chatRecordSummary.setChatSummary(item.getText().length() > 30 ? item.getText().substring(0, 30) : item.getText());
+                                });
                     }
                 } catch (JsonProcessingException e) {
                     System.err.printf("Can't getChatRecordsSummaryByUserId '%s': %s", userId, e.getMessage());
@@ -97,6 +98,7 @@ public class ChatConversationService {
             });
         });
 
+        Collections.reverse(chatRecordSummaries);
         return chatRecordSummaries;
     }
 }

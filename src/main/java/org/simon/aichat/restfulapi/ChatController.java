@@ -70,7 +70,6 @@ public class ChatController {
     @GetMapping("/chat_records_summary")
     public ResponseEntity<List<ChatRecordSummary>> chatRecordsSummary() {
         List<ChatRecordSummary> chatRecordSummaries = chatConversationService.getChatRecordsSummaryByUserId(1L);
-        chatRecordSummaries.sort(Comparator.comparing(ChatRecordSummary::getGmtCreate));
         return ResponseEntity.ok(chatRecordSummaries);
     }
 }
