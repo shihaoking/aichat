@@ -6,7 +6,7 @@ const imageShow = document.getElementById('imageShow');
 const chatRecordsSummaryArea = document.getElementById('chatRecordsSummaryArea');
 const newChatButton = document.getElementById('newChatButton');
 
-var chatId = 1; // 替换为需要查询的聊天 ID
+var chatId; // 替换为需要查询的聊天 ID
 
 function onRecordSummaryItemSelected() {
     unactiveOtherRecordSummaryItem();
@@ -100,9 +100,13 @@ function renderChatRecordsSummary(records) {
 
     var i = 1;
     records.forEach(record => {
+        if (i === 1) {
+            chatId = record.chatId;
+            fetchChatDetailHistory();
+        }
         renderChatRecordsSummaryItem(record,  false,i === 1);
         i++;
-    })
+    });
 }
 
 // 获取聊天回话列表
@@ -280,7 +284,6 @@ newChatButton.addEventListener('click', newChat);
 
 async function onloadInit() {
     fetchChatRecordsSummary();
-    fetchChatDetailHistory();
 }
 
 window.onload = onloadInit; // 页面加载时获取聊天记录
