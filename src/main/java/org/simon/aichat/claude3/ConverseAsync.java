@@ -7,9 +7,8 @@ package org.simon.aichat.claude3;
 // Use the Converse API to send a text message to Anthropic Claude
 // with the async Java client.
 
-import org.simon.aichat.common.AwsCredentialsGenerate;
 import org.springframework.stereotype.Service;
-import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
+import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.bedrockruntime.BedrockRuntimeAsyncClient;
 import software.amazon.awssdk.services.bedrockruntime.model.Message;
@@ -26,9 +25,7 @@ public class ConverseAsync {
         // Create a Bedrock Runtime client in the AWS Region you want to use.
         // Replace the DefaultCredentialsProvider with your preferred credentials provider.
         var client = BedrockRuntimeAsyncClient.builder()
-                //.credentialsProvider(DefaultCredentialsProvider.create())
-                .credentialsProvider(StaticCredentialsProvider.create(
-                        AwsCredentialsGenerate.generateBasicCredential()))
+                .credentialsProvider(DefaultCredentialsProvider.create())
                 .region(Region.US_EAST_1)
                 .build();
 
