@@ -37,7 +37,7 @@ public class ConverseAsync {
                 .modelId(modelId)
                 .messages(inputs)
                 .inferenceConfig(config -> config
-                        .maxTokens(1024)
+                        .maxTokens(2048)
                         .temperature(0.5F)
                         .topP(0.9F))
         );
