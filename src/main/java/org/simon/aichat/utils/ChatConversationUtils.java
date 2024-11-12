@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
+import java.util.Objects;
 
 public class ChatConversationUtils {
     public static Message conversation2Message(ChatConversation conversation) {
@@ -70,35 +71,31 @@ public class ChatConversationUtils {
         return messages;
     }
 
-    public static Message textAndImageFile2Message(ConversationRole role, String userInput, MultipartFile imgFile) {
-
-        List<ContentBlock> contentBlocks = new ArrayList<>();
-
-        if(StringUtils.isNotBlank(userInput)) {
-            contentBlocks.add(ContentBlock.fromText(userInput));
+    public static ChatConversation textAndImageFile2Conversation(Long chatId, ConversationRole role, String userInput, MultipartFile imgFile) {
+        if (StringUtils.isBlank(userInput) && imgFile == null) {
+            return null;
         }
 
-        if(imgFile != null) {
-            try {
-                ImageBlock imageBlock = ImageBlock.builder()
-                        .source(ImageSource.fromBytes(SdkBytes.fromByteArray(imgFile.getBytes())))
-                        .format(ImageFormat.fromValue(imgFile.getContentType().replaceFirst("image/", "")))
-                        .build();
+        ChatConversation chatConversation = new ChatConversation();
+        chatConversation.setChatId(chatId);
+        chatConversation.setRole(role.toString());
 
-                contentBlocks.add(ContentBlock.fromImage(imageBlock));
+        if (StringUtils.isNotBlank(userInput)) {
+            chatConversation.getContents().add(ChatContent.fromText(userInput));
+        }
+
+        if (imgFile != null) {
+            try {
+                ChatImageContent chatImageContent = new ChatImageContent();
+                chatImageContent.setSource(ChatImageSource.fromBytes(imgFile.getBytes()));
+                chatImageContent.setFormat(Objects.requireNonNull(imgFile.getContentType()).replaceFirst("image/", ""));
+                chatConversation.getContents().add(ChatContent.fromImage(chatImageContent));
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
         }
 
-        if(!CollectionUtils.isNullOrEmpty(contentBlocks)) {
-            return Message.builder()
-                    .content(contentBlocks)
-                    .role(role)
-                    .build();
-        } else {
-            return null;
-        }
+        return chatConversation;
     }
 
     public static ChatConversation message2Conversation(Message message) {
@@ -139,22 +136,5 @@ public class ChatConversationUtils {
         }
 
         return chatConversation;
-    }
-
-    public static List<ChatConversation> messages2Conversations(List<Message> messages) {
-        if(CollectionUtils.isNullOrEmpty(messages)) {
-            return new ArrayList<>();
-        }
-
-        List<ChatConversation> chatConversations = new ArrayList<>();
-        for (Message message : messages) {
-            if(message == null) {
-                continue;
-            }
-
-            chatConversations.add(message2Conversation(message));
-        }
-
-        return chatConversations;
     }
 }

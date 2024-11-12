@@ -37,4 +37,10 @@ public class ChatContent {
         chatContent.type = ContentBlock.Type.TEXT;
         return chatContent;
     }
+
+    public static ChatContent fromImage(ChatImageContent image) {
+        ChatContent chatContent = new ChatContent();
+        chatContent.image = image;
+        return chatContent;
+    }
 }

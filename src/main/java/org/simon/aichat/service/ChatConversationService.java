@@ -41,7 +41,7 @@ public class ChatConversationService {
         return chatConversationRecord;
     }
 
-    public boolean saveChatConversation(ChatConversationRecord chatConversationRecord) {
+    public Long saveChatConversation(ChatConversationRecord chatConversationRecord) {
         ChatRecord record = new ChatRecord();
         record.setId(chatConversationRecord.getChatId());
         record.setUserId(chatConversationRecord.getUserId() == null ? 1L : chatConversationRecord.getUserId());
@@ -53,13 +53,12 @@ public class ChatConversationService {
             String conversationStr = objectMapper.writeValueAsString(chatConversationRecord.getConversations());
 
             record.setContent(conversationStr);
-            chatRepository.save(record);
-
+            record = chatRepository.save(record);
         } catch (JsonProcessingException e) {
             System.err.printf("Can't saveChatConversation '%s': %s", e.getMessage());
-            return false;
+            return null;
         }
-        return true;
+        return record.getId();
     }
 
     public List<ChatRecordSummary> getChatRecordsSummaryByUserId(Long userId) {

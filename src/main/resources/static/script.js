@@ -240,6 +240,7 @@ async function sendMessage() {
         if (response.ok) {
             const jsonData = await response.json();
             removeResponseWaiting();
+            chatId = jsonData.chatId;
             renderChatRecordItem(jsonData); // 重新获取聊天记录
             chatArea.scrollTop = chatArea.scrollHeight; // 滚动到底部
         } else {

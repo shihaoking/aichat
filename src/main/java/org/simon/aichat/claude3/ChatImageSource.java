@@ -3,6 +3,8 @@ package org.simon.aichat.claude3;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import software.amazon.awssdk.services.bedrockruntime.model.ImageSource;
 
+import java.util.Base64;
+
 public class ChatImageSource {
     private String bytesStr;
 
@@ -23,5 +25,11 @@ public class ChatImageSource {
 
     public void setType(ImageSource.Type type) {
         this.type = type;
+    }
+
+    public static ChatImageSource fromBytes(byte[] bytes) {
+        ChatImageSource chatImageSource = new ChatImageSource();
+        chatImageSource.setBytesStr(Base64.getEncoder().encodeToString(bytes));
+        return chatImageSource;
     }
 }

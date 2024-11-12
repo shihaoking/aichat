@@ -26,7 +26,8 @@ public class ChatController {
     private ChatConversationService chatConversationService;
 
     @PostMapping("/chat")
-    public ResponseEntity<ChatConversation> chat(@RequestParam(required = false) Long id, @RequestParam String userInput, @RequestParam(required = false) MultipartFile imgFile) {
+    public ResponseEntity<ChatConversation> chat(@RequestParam(required = false) Long id,
+                                                 @RequestParam String userInput, @RequestParam(required = false) MultipartFile imgFile) {
 
         ChatConversationRecord chatRecord = null;
         if(id != null) {
@@ -37,11 +38,9 @@ public class ChatController {
             chatRecord = new ChatConversationRecord();
         }
 
-        Message newInputMessage = ChatConversationUtils.textAndImageFile2Message(ConversationRole.USER, userInput, imgFile);
-        if(newInputMessage != null) {
-            //将本次用户的对话追加到数据库的记录里
-            chatRecord.getConversations().add(ChatConversationUtils.message2Conversation(newInputMessage));
-        }
+        ChatConversation newConversation = ChatConversationUtils.textAndImageFile2Conversation(id, ConversationRole.USER, userInput, imgFile);
+        //将本次用户的对话追加到数据库的记录里
+        chatRecord.getConversations().add(newConversation);
 
         List<Message> messages = ChatConversationUtils.conversations2Messages(chatRecord.getConversations());
 
@@ -52,7 +51,8 @@ public class ChatController {
         ChatConversation chatRespConversation = ChatConversationUtils.message2Conversation(resultMsg);
         //将本次系统的回答追加到数据库的记录里
         chatRecord.getConversations().add(chatRespConversation);
-        chatConversationService.saveChatConversation(chatRecord);
+        id = chatConversationService.saveChatConversation(chatRecord);
+        chatRespConversation.setChatId(id);
 
         return ResponseEntity.ok(chatRespConversation);
     }

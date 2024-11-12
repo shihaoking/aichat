@@ -5,9 +5,19 @@ import java.util.List;
 
 public class ChatConversation {
 
+    private Long chatId;
+
     private String role;
 
     private List<ChatContent> contents = new ArrayList<>();
+
+    public Long getChatId() {
+        return chatId;
+    }
+
+    public void setChatId(Long chatId) {
+        this.chatId = chatId;
+    }
 
     public String getRole() {
         return role;

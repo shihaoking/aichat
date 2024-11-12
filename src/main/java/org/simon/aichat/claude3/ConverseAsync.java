@@ -26,7 +26,7 @@ public class ConverseAsync {
         // Replace the DefaultCredentialsProvider with your preferred credentials provider.
         var client = BedrockRuntimeAsyncClient.builder()
                 .credentialsProvider(DefaultCredentialsProvider.create())
-                .region(Region.US_EAST_1)
+                .region(Region.US_WEST_2)
                 .build();
 
         // Set the model ID, e.g., Claude 3 Sonnet.
@@ -37,7 +37,7 @@ public class ConverseAsync {
                 .modelId(modelId)
                 .messages(inputs)
                 .inferenceConfig(config -> config
-                        .maxTokens(1024)
+                        .maxTokens(256)
                         .temperature(0.5F)
                         .topP(0.9F))
         );
