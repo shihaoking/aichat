@@ -1,5 +1,6 @@
 package org.simon.aichat.websocket;
 
+import io.micrometer.common.util.StringUtils;
 import org.simon.aichat.claude3.ConverseAsync;
 import org.simon.aichat.service.ChatConversationService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,6 +59,10 @@ public class RTChatWebSocketHandler extends TextWebSocketHandler {
         System.out.printf("Get response messages from claude, %s \n\n", new Date());
     }
 
+
+    /**
+     * 实时响应内容处理
+     */
     private class ContentBlockDeltaComsumer implements Consumer<String> {
         private WebSocketSession session;
 
@@ -71,6 +76,10 @@ public class RTChatWebSocketHandler extends TextWebSocketHandler {
         }
     }
 
+
+    /**
+     * 响应完成后处理
+     */
     private class MessageStopComnsumer implements Consumer<ChatStreamMessage> {
         private WebSocketSession session;
 
@@ -81,12 +90,12 @@ public class RTChatWebSocketHandler extends TextWebSocketHandler {
 
         @Override
         public void accept(ChatStreamMessage message) {
-            sendMessage(session, new TextMessage(message.getStreamMessage()));
+            if(StringUtils.isNotBlank(message.getStreamMessage())) {
+                sendMessage(session, new TextMessage(message.getStreamMessage()));
+            }
 
             Message respMessage = Message.builder().role(ConversationRole.ASSISTANT)
                     .content(ContentBlock.fromText(message.getFinallMessage())).build();
-
-
 
             List<Message> historyMessages = chatRecords.computeIfAbsent(session.getRemoteAddress().getHostName(), k -> new ArrayList<>());
             historyMessages.add(respMessage);

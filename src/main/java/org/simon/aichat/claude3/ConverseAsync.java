@@ -101,31 +101,30 @@ public class ConverseAsync {
                 .subscriber(ConverseStreamResponseHandler.Visitor.builder()
                         .onContentBlockDelta(chunk -> {
                             String responseText = chunk.delta().text();
+                            System.out.println("RealTimeResponseMessage: " + responseText);
                             fullContant.append(responseText);
-
                             Matcher matcher = pattern.matcher(responseText);
 
-                            // 查找并输出匹配结果
+                            // 判断本次响应内容是否包含标点符号
                             if (matcher.matches()) {
-                                realTimeResponse.append(matcher.group(1));
-                                realTimeResponse.append(matcher.group(2));
+                                realTimeResponse.append(matcher.group(1));//标点符号前面的内容
+                                realTimeResponse.append(matcher.group(2));//标点符号
 
+                                //带输出的内容长度大于10后才输出，小于10的话就继续拼接
                                 if (realTimeResponse.length() > 10) {
                                     String respStr = realTimeResponse.toString();
                                     respStr = respStr.replaceAll("[\s\n\r]]", "");
                                     if (respStr.length() > 0) {
-                                        System.out.println(">>>" + realTimeResponse);
+                                        //将当前已经断好句的内容输出
+                                        contentBlockDeltaComsumer.accept(respStr);
                                     }
-                                    //将当前已经断好句的内容输出
-                                    contentBlockDeltaComsumer.accept(respStr);
-
-                                    //重置实时输出内容
+                                    //重置实时输出内容，并将标点符号后面的内容追加进去
                                     realTimeResponse.setLength(0);
                                     realTimeResponse.append(matcher.group(3));
                                 } else {
                                     realTimeResponse.append(matcher.group(3));
                                 }
-                            } else {
+                            } else {//本段响应内容没有标点符号则直接追加到待输出的文本中
                                 realTimeResponse.append(responseText);
                             }
 
@@ -137,7 +136,7 @@ public class ConverseAsync {
                             }
                         }).onMessageStop(c -> {
                             System.out.println("Claude finished response" + Calendar.getInstance().getTime());
-                            System.out.println(">>>" + fullContant);
+                            System.out.println("FullResponseMessage: " + fullContant);
 
                             //最后剩余部分输出
                             if (StringUtils.isNoneBlank(realTimeResponse.toString())) {
