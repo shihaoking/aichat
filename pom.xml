@@ -63,6 +63,15 @@
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-websocket</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>fastjson</artifactId>
+            <version>1.2.78</version>
+        </dependency>
     </dependencies>
     <dependencyManagement>
         <dependencies>
@@ -86,10 +95,10 @@
                     <source>17</source><!-- 设置源代码的JDK版本 -->
                     <target>17</target><!-- 设置目标代码的JDK版本 -->
                     <encoding>UTF-8</encoding><!-- 设置编码方式 -->
-                    <skipTests>true</skipTests>
-                </configuration>
-            </plugin>
-            <!--maven 打包插件-->
+            <!--<skipTests>true</skipTests>-->
+        </configuration>
+    </plugin>
+    <!--maven 打包插件-->
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>

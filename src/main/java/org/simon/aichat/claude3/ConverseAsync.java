@@ -7,20 +7,29 @@ package org.simon.aichat.claude3;
 // Use the Converse API to send a text message to Anthropic Claude
 // with the async Java client.
 
+import org.apache.commons.lang3.StringUtils;
+import org.simon.aichat.websocket.ChatStreamMessage;
 import org.springframework.stereotype.Service;
 import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.bedrockruntime.BedrockRuntimeAsyncClient;
+import software.amazon.awssdk.services.bedrockruntime.model.ContentBlock;
+import software.amazon.awssdk.services.bedrockruntime.model.ConversationRole;
+import software.amazon.awssdk.services.bedrockruntime.model.ConverseStreamResponseHandler;
 import software.amazon.awssdk.services.bedrockruntime.model.Message;
 
+import java.util.Calendar;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.function.Consumer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Service
 public class ConverseAsync {
     
-    public Message converseAsync(List<Message> inputs) {
+    public Message converseAsync(List<Message> messages) {
 
         // Create a Bedrock Runtime client in the AWS Region you want to use.
         // Replace the DefaultCredentialsProvider with your preferred credentials provider.
@@ -35,7 +44,7 @@ public class ConverseAsync {
         // Send the message with a basic inference configuration.
         var request = client.converse(params -> params
                 .modelId(modelId)
-                .messages(inputs)
+                .messages(messages)
                 .inferenceConfig(config -> config
                         .maxTokens(2048)
                         .temperature(0.5F)
@@ -68,6 +77,95 @@ public class ConverseAsync {
             System.err.printf("Can't invoke '%s': %s", modelId, e.getMessage());
             throw new RuntimeException(e);
         }
+    }
+
+    public void converseStream(List<Message> messages, Consumer<String> contentBlockDeltaComsumer, Consumer<String> onMessageStartComnsumer, Consumer<ChatStreamMessage> onMessageStopComnsumer) {
+        StringBuilder realTimeResponse = new StringBuilder();
+
+        // Create a Bedrock Runtime client in the AWS Region you want to use.
+        // Replace the DefaultCredentialsProvider with your preferred credentials provider.
+        var client = BedrockRuntimeAsyncClient.builder()
+                .credentialsProvider(DefaultCredentialsProvider.create())
+                .region(Region.US_WEST_2)
+                .build();
+
+        // Set the model ID, e.g., Claude 3 Haiku.
+        var modelId = "anthropic.claude-3-5-sonnet-20240620-v1:0";
+
+        String regex = "(.*?)([,，.。!！:：])(.*)";
+        Pattern pattern = Pattern.compile(regex);
+        StringBuilder fullContant = new StringBuilder();
+
+        // Create a handler to extract and print the response text in real-time.
+        var responseStreamHandler = ConverseStreamResponseHandler.builder()
+                .subscriber(ConverseStreamResponseHandler.Visitor.builder()
+                        .onContentBlockDelta(chunk -> {
+                            String responseText = chunk.delta().text();
+                            fullContant.append(responseText);
+
+                            Matcher matcher = pattern.matcher(responseText);
+
+                            // 查找并输出匹配结果
+                            if (matcher.matches()) {
+                                realTimeResponse.append(matcher.group(1));
+                                realTimeResponse.append(matcher.group(2));
+
+                                if (realTimeResponse.length() > 10) {
+                                    String respStr = realTimeResponse.toString();
+                                    respStr = respStr.replaceAll("[\s\n\r]]", "");
+                                    if (respStr.length() > 0) {
+                                        System.out.println(">>>" + realTimeResponse);
+                                    }
+                                    //将当前已经断好句的内容输出
+                                    contentBlockDeltaComsumer.accept(respStr);
+
+                                    //重置实时输出内容
+                                    realTimeResponse.setLength(0);
+                                    realTimeResponse.append(matcher.group(3));
+                                } else {
+                                    realTimeResponse.append(matcher.group(3));
+                                }
+                            } else {
+                                realTimeResponse.append(responseText);
+                            }
+
+                        }).onMessageStart(c -> {
+                            System.out.println("Claude start response" + Calendar.getInstance().getTime());
+
+                            if (onMessageStartComnsumer != null) {
+                                onMessageStartComnsumer.accept(c.roleAsString());
+                            }
+                        }).onMessageStop(c -> {
+                            System.out.println("Claude finished response" + Calendar.getInstance().getTime());
+                            System.out.println(">>>" + fullContant);
+
+                            //最后剩余部分输出
+                            if (StringUtils.isNoneBlank(realTimeResponse.toString())) {
+                                ChatStreamMessage chatStreamMessage = new ChatStreamMessage();
+                                chatStreamMessage.setStreamMessage(realTimeResponse.toString());
+                                chatStreamMessage.setFinallMessage(fullContant.toString());
+                                onMessageStopComnsumer.accept(chatStreamMessage);
+                            }
+                        }).build()
+                ).onError(err ->
+                        System.err.printf("Can't invoke '%s': %s", modelId, err.getMessage())
+                ).build();
+
+        try {
+            // Send the message with a basic inference configuration and attach the handler.
+            System.out.println("Start as calude" + Calendar.getInstance().getTime());
+            client.converseStream(request -> request.modelId(modelId)
+                    .messages(messages)
+                    .inferenceConfig(config -> config
+                            .maxTokens(256)
+                            .temperature(0.5F)
+                            .topP(0.9F)
+                    ), responseStreamHandler).get();
+
+        } catch (ExecutionException | InterruptedException e) {
+            System.err.printf("Can't invoke '%s': %s", modelId, e.getCause().getMessage());
+        }
+
     }
 }
 // snippet-end:[bedrock-runtime.java2.ConverseAsync_AnthropicClaude]
