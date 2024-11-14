@@ -1,5 +1,6 @@
 package org.simon.aichat.websocket;
 
+import com.alibaba.fastjson.JSON;
 import io.micrometer.common.util.StringUtils;
 import org.simon.aichat.claude3.ConverseAsync;
 import org.simon.aichat.service.ChatConversationService;
@@ -38,7 +39,9 @@ public class RTChatWebSocketHandler extends TextWebSocketHandler {
 
         // 建立连接后将连接以键值对方式存储，便于后期向客户端发送消息
         // 以客户端连接的唯一标识为key,可以通过客户端发送唯一标识
-        connections.put(session.getRemoteAddress().getHostName(), session);
+        if(!connections.containsKey(session.getRemoteAddress().getHostName())) {
+            connections.put(session.getRemoteAddress().getHostName(), session);
+        }
 
         System.out.println("当前客户端连接数：" + connections.size());
     }
@@ -51,55 +54,22 @@ public class RTChatWebSocketHandler extends TextWebSocketHandler {
         System.out.println("收到消息: " + message.getPayload());
 
         List<Message> historyMessages = chatRecords.computeIfAbsent(session.getRemoteAddress().getHostName(), k -> new ArrayList<>());
+        Message newMessage = Message.builder()
+                .role(ConversationRole.USER)
+                .content(ContentBlock.fromText(message.getPayload()))
+                .build();
 
-        historyMessages.add(Message.builder().role(ConversationRole.USER).content(ContentBlock.fromText(message.getPayload())).build());
+
+        historyMessages.add(newMessage);
+
+        System.out.println("message list: " + historyMessages);
+
 
         System.out.printf("Start send messages to claude, %s \n\n", new Date());
-        converseAsync.converseStream(historyMessages, new ContentBlockDeltaComsumer(session), null, new MessageStopComnsumer(session));
+        converseAsync.converseStream(historyMessages,
+                new ContentBlockDeltaComsumer(session), null,
+                new MessageStopComnsumer(newMessage, session));
         System.out.printf("Get response messages from claude, %s \n\n", new Date());
-    }
-
-
-    /**
-     * 实时响应内容处理
-     */
-    private class ContentBlockDeltaComsumer implements Consumer<String> {
-        private WebSocketSession session;
-
-        public ContentBlockDeltaComsumer(WebSocketSession session) {
-            this.session = session;
-        }
-
-        @Override
-        public void accept(String message) {
-            sendMessage(session, new TextMessage(message));
-        }
-    }
-
-
-    /**
-     * 响应完成后处理
-     */
-    private class MessageStopComnsumer implements Consumer<ChatStreamMessage> {
-        private WebSocketSession session;
-
-
-        public MessageStopComnsumer(WebSocketSession session) {
-            this.session = session;
-        }
-
-        @Override
-        public void accept(ChatStreamMessage message) {
-            if(StringUtils.isNotBlank(message.getStreamMessage())) {
-                sendMessage(session, new TextMessage(message.getStreamMessage()));
-            }
-
-            Message respMessage = Message.builder().role(ConversationRole.ASSISTANT)
-                    .content(ContentBlock.fromText(message.getFinallMessage())).build();
-
-            List<Message> historyMessages = chatRecords.computeIfAbsent(session.getRemoteAddress().getHostName(), k -> new ArrayList<>());
-            historyMessages.add(respMessage);
-        }
     }
 
     /**
@@ -116,6 +86,7 @@ public class RTChatWebSocketHandler extends TextWebSocketHandler {
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
         System.out.println("触发关闭websocket连接");
+
         // 移除连接
         connections.remove(session.getRemoteAddress().getHostName());
     }
@@ -143,4 +114,49 @@ public class RTChatWebSocketHandler extends TextWebSocketHandler {
         }
     }
 
+    /**
+     * 实时响应内容处理
+     */
+    private class ContentBlockDeltaComsumer implements Consumer<String> {
+        private WebSocketSession session;
+
+        public ContentBlockDeltaComsumer(WebSocketSession session) {
+            this.session = session;
+        }
+
+        @Override
+        public void accept(String message) {
+            sendMessage(session, new TextMessage(message));
+        }
+    }
+
+
+    /**
+     * 响应完成后处理
+     */
+    private class MessageStopComnsumer implements Consumer<ChatStreamMessage> {
+        private WebSocketSession session;
+        private Message userMesssage;
+
+
+        public MessageStopComnsumer(Message userMesssage, WebSocketSession session) {
+            this.session = session;
+            this.userMesssage = userMesssage;
+        }
+
+        @Override
+        public void accept(ChatStreamMessage message) {
+            if(StringUtils.isNotBlank(message.getStreamMessage())) {
+                sendMessage(session, new TextMessage(message.getStreamMessage()));
+            }
+
+            Message respMessage = Message.builder()
+                    .role(ConversationRole.ASSISTANT)
+                    .content(ContentBlock.fromText(message.getFinallMessage()))
+                    .build();
+
+            List<Message> historyMessages = chatRecords.get(session.getRemoteAddress().getHostName());
+            historyMessages.add(respMessage);
+        }
+    }
 }
