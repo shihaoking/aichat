@@ -89,6 +89,7 @@ public class RTChatWebSocketHandler extends TextWebSocketHandler {
 
         // 移除连接
         connections.remove(session.getRemoteAddress().getHostName());
+        chatRecords.remove(session.getRemoteAddress().getHostName());
     }
 
     @Override
