@@ -39,7 +39,7 @@ public class ConverseAsync {
                 .build();
 
         // Set the model ID, e.g., Claude 3 Sonnet.
-        var modelId = "anthropic.claude-3-5-sonnet-20240620-v1:0";
+        var modelId = "anthropic.claude-3-5-haiku-20241022-v1:0";
 
         // Send the message with a basic inference configuration.
         var request = client.converse(params -> params
@@ -90,7 +90,7 @@ public class ConverseAsync {
                 .build();
 
         // Set the model ID, e.g., Claude 3 Haiku.
-        var modelId = "anthropic.claude-3-5-sonnet-20240620-v1:0";
+        var modelId = "anthropic.claude-3-5-haiku-20241022-v1:0";
 
         String regex = "(.*?)([,，.。!！:：])(.*)";
         Pattern pattern = Pattern.compile(regex);

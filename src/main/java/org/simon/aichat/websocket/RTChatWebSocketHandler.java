@@ -1,9 +1,7 @@
 package org.simon.aichat.websocket;
 
-import com.alibaba.fastjson.JSON;
 import io.micrometer.common.util.StringUtils;
 import org.simon.aichat.claude3.ConverseAsync;
-import org.simon.aichat.service.ChatConversationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
@@ -27,8 +25,6 @@ public class RTChatWebSocketHandler extends TextWebSocketHandler {
     @Autowired
     private ConverseAsync converseAsync;
 
-    @Autowired
-    private ChatConversationService chatConversationService;
 
     /**
      * 建立连接后触发
