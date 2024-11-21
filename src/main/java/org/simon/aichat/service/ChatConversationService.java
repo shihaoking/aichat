@@ -97,6 +97,7 @@ public class ChatConversationService {
             });
         });
 
+        chatRecordSummaries.sort(Comparator.comparing(ChatRecordSummary::getGmtModified));
         Collections.reverse(chatRecordSummaries);
         return chatRecordSummaries;
     }
