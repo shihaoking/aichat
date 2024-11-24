@@ -1,5 +1,6 @@
 package org.simon.aichat.websocket;
 
+import com.alibaba.fastjson.JSON;
 import io.micrometer.common.util.StringUtils;
 import org.simon.aichat.claude3.ConverseAsync;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,12 +32,13 @@ public class RTChatWebSocketHandler extends TextWebSocketHandler {
      * */
     @Override
     public void afterConnectionEstablished(WebSocketSession session) {
-        System.out.println("成功建立websocket连接");
+        String hostName = session.getRemoteAddress().getHostName();
+        System.out.println("成功建立websocket连接, hostName: " + hostName);
 
         // 建立连接后将连接以键值对方式存储，便于后期向客户端发送消息
         // 以客户端连接的唯一标识为key,可以通过客户端发送唯一标识
-        if(!connections.containsKey(session.getRemoteAddress().getHostName())) {
-            connections.put(session.getRemoteAddress().getHostName(), session);
+        if(!connections.containsKey(hostName)) {
+            connections.put(hostName, session);
         }
 
         System.out.println("当前客户端连接数：" + connections.size());
@@ -63,7 +65,7 @@ public class RTChatWebSocketHandler extends TextWebSocketHandler {
         System.out.println("Start send messages to claude by stream");
         converseAsync.converseStream(historyMessages,
                 new ContentBlockDeltaComsumer(session), null,
-                new MessageStopComnsumer(newMessage, session));
+                new MessageStopComnsumer(session));
         System.out.println("Get response messages from claude by stream");
     }
 
@@ -79,12 +81,13 @@ public class RTChatWebSocketHandler extends TextWebSocketHandler {
      * 关闭连接时触发
      * */
     @Override
-    public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
-        System.out.println("触发关闭websocket连接");
+    public void afterConnectionClosed(WebSocketSession session, CloseStatus status) {
+        String hostName = session.getRemoteAddress().getHostName();
+        System.out.println("触发关闭websocket连接, hostName=: " + hostName);
 
         // 移除连接
-        connections.remove(session.getRemoteAddress().getHostName());
-        chatRecords.remove(session.getRemoteAddress().getHostName());
+        connections.remove(hostName);
+        chatRecords.remove(hostName);
     }
 
     @Override
@@ -122,6 +125,7 @@ public class RTChatWebSocketHandler extends TextWebSocketHandler {
 
         @Override
         public void accept(String message) {
+            System.out.println("On Stream message received, message: " + message);
             sendMessage(session, new TextMessage(message));
         }
     }
@@ -132,16 +136,16 @@ public class RTChatWebSocketHandler extends TextWebSocketHandler {
      */
     private class MessageStopComnsumer implements Consumer<ChatStreamMessage> {
         private WebSocketSession session;
-        private Message userMesssage;
 
 
-        public MessageStopComnsumer(Message userMesssage, WebSocketSession session) {
+        public MessageStopComnsumer(WebSocketSession session) {
             this.session = session;
-            this.userMesssage = userMesssage;
         }
 
         @Override
         public void accept(ChatStreamMessage message) {
+            System.out.println("On Stream message stop, message: " + JSON.toJSONString(message));
+
             if(StringUtils.isNotBlank(message.getStreamMessage())) {
                 sendMessage(session, new TextMessage(message.getStreamMessage()));
             }
