@@ -98,7 +98,6 @@ public class ConverseAsync {
                 .subscriber(ConverseStreamResponseHandler.Visitor.builder()
                         .onContentBlockDelta(chunk -> {
                             String responseText = chunk.delta().text();
-                            System.out.println("RealTimeResponseMessage: " + responseText);
                             fullContant.append(responseText);
                             Matcher matcher = pattern.matcher(responseText);
 
@@ -133,7 +132,6 @@ public class ConverseAsync {
                             }
                         }).onMessageStop(c -> {
                             System.out.println("Claude finished response" + Calendar.getInstance().getTime());
-                            System.out.println("FullResponseMessage: " + fullContant);
 
                             //最后剩余部分输出
                             if (StringUtils.isNoneBlank(realTimeResponse.toString())) {

@@ -60,12 +60,11 @@ public class RTChatWebSocketHandler extends TextWebSocketHandler {
 
         System.out.println("message list: " + historyMessages);
 
-
-        System.out.printf("Start send messages to claude, %s \n\n", new Date());
+        System.out.println("Start send messages to claude by stream");
         converseAsync.converseStream(historyMessages,
                 new ContentBlockDeltaComsumer(session), null,
                 new MessageStopComnsumer(newMessage, session));
-        System.out.printf("Get response messages from claude, %s \n\n", new Date());
+        System.out.println("Get response messages from claude by stream");
     }
 
     /**
