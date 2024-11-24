@@ -125,7 +125,7 @@ public class RTChatWebSocketHandler extends TextWebSocketHandler {
 
         @Override
         public void accept(String message) {
-            System.out.println("On Stream message received, message: " + message);
+            System.out.println(session.getRemoteAddress().getHostName() + "on stream content block delta, message: " + message);
             sendMessage(session, new TextMessage(message));
         }
     }
@@ -144,7 +144,7 @@ public class RTChatWebSocketHandler extends TextWebSocketHandler {
 
         @Override
         public void accept(ChatStreamMessage message) {
-            System.out.println("On Stream message stop, message: " + JSON.toJSONString(message));
+            System.out.println(session.getRemoteAddress().getHostName() + " on stream message stop, message: " + JSON.toJSONString(message));
 
             if(StringUtils.isNotBlank(message.getStreamMessage())) {
                 sendMessage(session, new TextMessage(message.getStreamMessage()));
