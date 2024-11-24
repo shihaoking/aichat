@@ -13,10 +13,7 @@ import org.springframework.stereotype.Service;
 import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.bedrockruntime.BedrockRuntimeAsyncClient;
-import software.amazon.awssdk.services.bedrockruntime.model.ContentBlock;
-import software.amazon.awssdk.services.bedrockruntime.model.ConversationRole;
-import software.amazon.awssdk.services.bedrockruntime.model.ConverseStreamResponseHandler;
-import software.amazon.awssdk.services.bedrockruntime.model.Message;
+import software.amazon.awssdk.services.bedrockruntime.model.*;
 
 import java.util.Calendar;
 import java.util.List;
@@ -46,7 +43,7 @@ public class ConverseAsync {
                 .modelId(modelId)
                 .messages(messages)
                 .inferenceConfig(config -> config
-                        .maxTokens(2048)
+                        .maxTokens(4096)
                         .temperature(0.5F)
                         .topP(0.9F))
         );
@@ -154,6 +151,7 @@ public class ConverseAsync {
             // Send the message with a basic inference configuration and attach the handler.
             System.out.println("Start as calude" + Calendar.getInstance().getTime());
             client.converseStream(request -> request.modelId(modelId)
+                    .system(SystemContentBlock.fromText("你是一个年轻的无所不知的女性，你的回答内容通常比较简练"))
                     .messages(messages)
                     .inferenceConfig(config -> config
                             .maxTokens(256)
